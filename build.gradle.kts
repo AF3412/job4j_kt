@@ -7,7 +7,7 @@ checkstyle {
 }
 
 group = "ru.af3412"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
