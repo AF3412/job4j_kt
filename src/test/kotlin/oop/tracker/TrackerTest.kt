@@ -2,7 +2,9 @@ package oop.tracker
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import ru.af3412.oop.tracker.Item
 import ru.af3412.oop.tracker.Tracker
+import java.time.LocalDateTime
 
 class TrackerTest {
 
@@ -58,6 +60,15 @@ class TrackerTest {
         assertNull(item)
         assertNull(item?.name)
         assertNull(item?.comments?.get(0))
+    }
+
+    @Test
+    fun defaultPositionCommentTest() {
+        val item = Item(0,"first item", "description item", LocalDateTime.now(), 2)
+        item.addComment("first comment")
+
+        assertEquals("first comment", item.comments[2])
+        assertNull(item.comments[0])
     }
 
 }

@@ -2,7 +2,7 @@ package ru.af3412.oop.tracker
 
 import java.time.LocalDateTime
 
-class Item (
+data class Item (
     val id: Int,
     val name: String,
     val description: String,
