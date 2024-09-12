@@ -1,5 +1,6 @@
 package ru.af3412.oop.tracker
 
 fun main() {
-    StartUI.init()
+    val ui = StartUI()
+    ui.init()
 }
