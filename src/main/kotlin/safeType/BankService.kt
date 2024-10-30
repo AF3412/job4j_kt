@@ -9,10 +9,7 @@ class BankService {
     }
 
     fun findByRequisite(passport: String, requisite: String): Account? {
-        val user = findByPassport(passport) ?: return null
-        return users[user]?.stream()?.filter { it.requisite == requisite }
-            ?.findFirst()
-            ?.orElse(null)
+        return findByPassport(passport).let { user -> users[user]?.find { it.requisite == requisite } }
     }
 
     fun addAccount(passport: String, account: Account) {
@@ -43,8 +40,13 @@ data class Account(val requisite: String, var balance: Double = 0.0)
 fun main() {
     val bank = BankService()
     bank.addUser(User("321", "Petr Arsentev"))
-    var user = bank.findByPassport("3211")
-    System.out.println(user?.userName)
-    user = bank.findByPassport("321")
-    System.out.println(user?.userName)
+    bank.addUser(User("123", "John Smith"))
+    bank.addAccount("321", Account("321", 100.0))
+    bank.addAccount("123", Account("123", 50.0))
+    val user = bank.findByPassport("3211")
+    println(user?.userName)
+
+    bank.transferMoney("123", "123", "321", "321", 50.0)
+    println(bank.findByRequisite("321", "321"))
+    println(bank.findByRequisite("123", "123"))
 }
