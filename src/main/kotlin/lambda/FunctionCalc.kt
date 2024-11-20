@@ -10,6 +10,10 @@ fun operation(type: String): (Double, Double) -> Double {
     }
 }
 
+fun add(left: (Double, Double) -> Double, right: (Double, Double) -> Double): (Double, Double, Double, Double) -> Double {
+    return { a, b, c, d -> left(a, b) + right(c, d) }
+}
+
 fun main() {
     val add = operation("add")
     println(add(5.0, 3.0)) // 8.0
@@ -25,4 +29,9 @@ fun main() {
 
     val unknown = operation("mod")
     println(unknown(5.0, 3.0)) // NaN
+
+    val aggrigate = add(add, add)
+
+    val result = aggrigate(1.0, 2.0, 3.0, 4.0) // 10.
+    println(result)
 }
