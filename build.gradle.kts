@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.apache.commons:commons-dbcp2:2.13.0")
+
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
     testImplementation("org.assertj:assertj-core:3.24.2")
