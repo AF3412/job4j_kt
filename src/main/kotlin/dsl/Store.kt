@@ -1,7 +1,5 @@
 package ru.af3412.dsl
 
-data class Item(val name: String)
-
 interface Store<T> {
     fun save(model: T): T
 }
@@ -20,6 +18,6 @@ fun Item.save(): Item {
 }
 
 fun main() {
-    val item = Item("Value")
+    val item = Item(1,"Value")
     item.save()
 }
