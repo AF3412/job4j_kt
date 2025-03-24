@@ -1,5 +1,6 @@
 package ru.af3412.dsl
 
+import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.boot.MetadataSources
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder
@@ -23,6 +24,24 @@ fun main() {
     } finally {
         StandardServiceRegistryBuilder.destroy(registry)
     }
+}
+
+fun <T> tx(sf: SessionFactory, block: (session: Session) -> T): T {
+    val session = sf.openSession()
+    session.beginTransaction()
+    val model = block(session)
+    session.transaction.commit()
+    session.close()
+    return model
+}
+
+fun <T> SessionFactory.tx2(block: Session.() -> T): T {
+    val session = openSession()
+    session.beginTransaction()
+    val model = session.block()
+    session.transaction.commit()
+    session.close()
+    return model
 }
 
 fun create(item: Item, sf: SessionFactory): Item {

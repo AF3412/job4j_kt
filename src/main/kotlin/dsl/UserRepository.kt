@@ -19,55 +19,80 @@ fun main() {
 
     val connection = DriverManager.getConnection(jdbcUrl, username, password)
     createTable(connection)
-    val user = User(uniqueIdGenerator(), "Alice")
-    create(user, connection)
+    val alice = User(uniqueIdGenerator(), "Alice")
+    create(alice, connection)
     printAll(connection)
-    update(User(1, "Vasya"), connection)
+    val vasya = User(1, "Vasya")
+    update(vasya, connection)
     printAll(connection)
-    delete(User(1, "Vasya"), connection)
-    printAll(connection)
+    //delete(User(1, "Vasya"), connection)
+    //printAll(connection)
     connection.close()
+}
+
+fun <T> tx(cn: Connection, block: (statement: Statement) -> T): T {
+    val statement = cn.createStatement()
+    val model = block(statement)
+    return model
+}
+
+fun <T> tx2(cn: Connection, block: Statement.() -> T): T {
+    val statement = cn.createStatement()
+    val model = block(statement)
+    return model
+}
+
+fun <T> Connection.tx3(block: Statement.() -> T): T {
+    val statement = createStatement()
+    val model = block(statement)
+    return model
 }
 
 fun createTable(connection: Connection) {
     val statement = connection.createStatement()
-    statement.execute("CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, name VARCHAR(255))")
+    statement.execute("CREATE TABLE IF NOT EXISTS persons (id INT PRIMARY KEY, name VARCHAR(255))")
     statement.close()
 }
 
-fun create(user: User, connection: Connection): User {
-    val statement = connection.createStatement()
-    statement.execute("INSERT INTO users (id, name) VALUES ('${user.id}', '${user.name}')")
-    statement.close()
-    return user
-}
+fun create(user: User, cn: Connection): User =
+    tx(cn) { st ->
+        st.use { statement ->
+            statement.execute("INSERT INTO persons (id, name) VALUES ('${user.id}', '${user.name}')")
+        }
+        user
+    }
 
-fun update(user: User, connection: Connection) {
-    val statement = connection.createStatement()
-    statement.execute("UPDATE users SET name = '${user.name}' WHERE id = '${user.id}'")
-    statement.close()
-}
+fun update(user: User, cn: Connection) =
+    tx2(cn) { use { "UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'" }
+        user
+    }
+//    val statement = cn.createStatement()
+//    statement.execute("UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'")
+//    statement.close()
 
-fun delete(user: User, connection: Connection) {
-    val statement = connection.createStatement()
-    statement.execute("DELETE FROM users WHERE id = '${user.id}'")
-    statement.close()
-}
+//fun update(user: User, cn: Connection) =
+//    tx2(cn) { "UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'" ; user}
 
-fun findById(id: Int, connection: Connection): List<User> {
+/*fun delete(user: User, connection: Connection) {
     val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT * FROM users WHERE id = $id")
-    val users = ArrayList<User>()
+    statement.execute("DELETE FROM persons WHERE id = '${user.id}'")
+    statement.close()
+}*/
+
+/*fun findById(id: Int, connection: Connection): List<User> {
+    val statement = connection.createStatement()
+    val resultSet = statement.executeQuery("SELECT * FROM persons WHERE id = $id")
+    val persons = ArrayList<User>()
     while (resultSet.next()) {
-        users.add(User(resultSet.getInt("id"), resultSet.getString("name")))
+        persons.add(User(resultSet.getInt("id"), resultSet.getString("name")))
     }
     statement.close()
-    return users
-}
+    return persons
+}*/
 
 fun printAll(connection: Connection) {
     val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT * FROM users")
+    val resultSet = statement.executeQuery("SELECT * FROM persons")
     val result = ArrayList<User>()
     while (resultSet.next()) {
         result.add(User(resultSet.getInt("id"), resultSet.getString("name")))
@@ -77,8 +102,5 @@ fun printAll(connection: Connection) {
 
 }
 
-/*fun <T> Connection.tx(block: Statement.() -> T): T {
-    val statement =
-}*/
 
 data class User(val id: Int, val name: String)
