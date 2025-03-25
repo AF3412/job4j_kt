@@ -25,18 +25,12 @@ fun main() {
     val vasya = User(1, "Vasya")
     update(vasya, connection)
     printAll(connection)
-    //delete(User(1, "Vasya"), connection)
-    //printAll(connection)
+    delete(User(1, "Vasya"), connection)
+    printAll(connection)
     connection.close()
 }
 
 fun <T> tx(cn: Connection, block: (statement: Statement) -> T): T {
-    val statement = cn.createStatement()
-    val model = block(statement)
-    return model
-}
-
-fun <T> tx2(cn: Connection, block: Statement.() -> T): T {
     val statement = cn.createStatement()
     val model = block(statement)
     return model
@@ -62,33 +56,13 @@ fun create(user: User, cn: Connection): User =
         user
     }
 
-fun update(user: User, cn: Connection) =
-    tx2(cn) { use { "UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'" }
-        user
-    }
-//    val statement = cn.createStatement()
-//    statement.execute("UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'")
-//    statement.close()
+fun update(user: User, cn: Connection) {
+    cn.tx3 { execute("UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'") }
+}
 
-//fun update(user: User, cn: Connection) =
-//    tx2(cn) { "UPDATE persons SET name = '${user.name}' WHERE id = '${user.id}'" ; user}
-
-/*fun delete(user: User, connection: Connection) {
-    val statement = connection.createStatement()
-    statement.execute("DELETE FROM persons WHERE id = '${user.id}'")
-    statement.close()
-}*/
-
-/*fun findById(id: Int, connection: Connection): List<User> {
-    val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT * FROM persons WHERE id = $id")
-    val persons = ArrayList<User>()
-    while (resultSet.next()) {
-        persons.add(User(resultSet.getInt("id"), resultSet.getString("name")))
-    }
-    statement.close()
-    return persons
-}*/
+fun delete(user: User, cn: Connection) {
+    cn.tx3 { execute("DELETE FROM persons WHERE id = '${user.id}'") }
+}
 
 fun printAll(connection: Connection) {
     val statement = connection.createStatement()
